@@ -38,6 +38,8 @@ SHR = 0b00001101
 
 # Sprint Challenge
 CMP = 0b10100111
+JMP = 0b01010100
+JEQ = 0b01010101
 
 
 class CPU:
@@ -67,7 +69,9 @@ class CPU:
             POP: self.POP,
             CALL: self.CALL,
             RET: self.RET,
-            CMP: self.CMP
+            CMP: self.CMP,
+            JMP: self.JMP,
+            JEQ: self.JEQ
         }
 
     def load(self, program_file_name):
@@ -198,6 +202,14 @@ class CPU:
         inst_address = self.reg[target_reg]
 
         self.reg[PC] = inst_address
+
+    def JEQ(self, operand):
+        target_reg = operand[0]
+
+        is_equal = bool((0b00000001) & self.fl)
+
+        if is_equal:
+            self.JMP([target_reg])
 
     def PRN(self, operand):
         # extracts the target register from the operand
