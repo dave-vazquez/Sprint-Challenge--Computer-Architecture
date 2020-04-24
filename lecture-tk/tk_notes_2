@@ -1,0 +1,96 @@
+NOT
+
+    A    NOT A
+  --------------
+    0      1
+    1      0
+
+
+  Inversion
+  ~ changes a from 1 to 0, or 0 to 1
+    a = 1
+    ~a == 0
+    b = 0
+    ~b = 1
+
+AND, OR
+
+  Self-explanitory...
+ 
+  &     |
+
+  a & b
+  a | b
+
+
+NAND
+
+  Think of AND and inverting the result
+
+  A    B    A NAND B
+  0    0       1
+  0    1       1
+  1    0       1
+  0    0       0
+
+  ~(a & b)
+
+
+NOR 
+
+  Think of OR and inverting the result
+
+  A    B    A OR B
+  0    0       1
+  0    1       0
+  1    0       0
+  1    1       0
+
+  ~(a | b)
+
+XOR - Exclusive OR
+  Similar to OR, but it's looking for one true or (1) in the conditional expression
+  and excludes any conditions where both values are the same 
+
+  A   B   A XOR B
+  0   0      0
+  0   1      1
+  1   0      1
+  1   1      0
+
+  a ^ b
+
+------------------------------------------------------------------------------------
+Multi-bit Numbers - Bit-Wise Operations
+
+  11101011 235
+& 10011101 157
+----------
+  10001001 137
+
+  11011010 218
+^ 11100011 227
+----------
+  00111001  57
+
+
+Masking with &
+  Extracting bits from another Numbers
+  Anywhere there's a 1 in the second operand
+  the first operand will be preserved
+  otherwise it will be changed to zero
+
+  11010110
+& 11110000
+----------
+  11010000
+
+Shifting Numbers
+
+<<, >>
+
+      1111
+<<1  11110
+
+      1111
+>>1    111 --> the last 1 is gone!
