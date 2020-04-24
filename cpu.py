@@ -204,8 +204,10 @@ class CPU:
     def JMP(self, operand_a, operand_b=None):
         target_reg = operand_a
 
+        # calls the instruction stored in the target register
         self.CALL(target_reg, None)
 
+        # sets the PC equal to the instruction address
         inst_address = self.reg[target_reg]
         self.reg[PC] = inst_address
 
@@ -215,8 +217,10 @@ class CPU:
         # masks all but the equal bit and castes to bool
         is_equal = bool((0b00000001) & self.fl)
 
+        # jumps to target instruction if the equals flag is true
         if is_equal:
             self.JMP(target_reg)
+        # otherwise increments the PC to the next instruction
         else:
             self.reg[PC] += 2
 
@@ -226,8 +230,10 @@ class CPU:
         # masks all but the equal bit and castes to bool
         is_equal = bool((0b00000001) & self.fl)
 
+        # jumps to target instruction if the equals flag is false
         if not is_equal:
             self.JMP(target_reg)
+        # otherwise increments the PC to the next instruction
         else:
             self.reg[PC] += 2
 
