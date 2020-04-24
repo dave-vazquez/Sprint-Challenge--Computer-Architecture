@@ -36,6 +36,9 @@ XOR = 0b00001011
 SHL = 0b00001100
 SHR = 0b00001101
 
+# Sprint Challenge
+CMP = 0b10100111
+
 
 class CPU:
     """Main CPU class."""
@@ -50,6 +53,12 @@ class CPU:
         # set R7, SP (Stack Pointer), to the address of the start of stack
         self.reg[SP] = STACK_START_ADDRESS
 
+        # 00000LGE
+        # 00000100 Less Than
+        # 00000010 Greater Than
+        # 00000001 Equal
+        self.fl = 0
+
         # initializes operation branch table
         self.operations = {
             PRN: self.PRN,
@@ -57,7 +66,8 @@ class CPU:
             PUSH: self.PUSH,
             POP: self.POP,
             CALL: self.CALL,
-            RET: self.RET
+            RET: self.RET,
+            CMP: self.CMP
         }
 
     def load(self, program_file_name):
@@ -89,6 +99,13 @@ class CPU:
             self.reg[reg_a] += self.reg[reg_b]
         elif op is MUL:
             self.reg[reg_a] *= self.reg[reg_b]
+        elif op is CMP:
+            if self.reg[reg_a] < self.reg[reg_b]:
+                self.fl = 0b00000100
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.fl = 0b00000010
+            elif self.reg[reg_a] == self.reg[reg_b]:
+                self.fl = 0b00000001
         else:
             raise Exception("Unsupported ALU operation")
 
