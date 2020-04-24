@@ -20,27 +20,21 @@ PUSH = 0b01000101
 POP = 0b01000110
 CALL = 0b01010000
 RET = 0b00010001
-# ALU OPERATION CODES
-ADD = 0b10100000
-SUB = 0b00000001
-MUL = 0b10100010
-DIV = 0b00000011
-MOD = 0b00000100
-INC = 0b00000101
-DEC = 0b00000110
-CMP = 0b00000111
-AND = 0b00001000
-NOT = 0b00001001
-OR = 0b00001010
-XOR = 0b00001011
-SHL = 0b00001100
-SHR = 0b00001101
-
-# Sprint Challenge
-CMP = 0b10100111
 JMP = 0b01010100
 JEQ = 0b01010101
 JNE = 0b01010110
+# ALU OPERATION CODES
+ADD = 0b10100000
+MUL = 0b10100010
+CMP = 0b10100111
+AND = 0b10101000
+OR = 0b10101010
+XOR = 0b10101011
+NOT = 0b01101001
+SHL = 0b10101100
+SHR = 0b10101101
+MOD = 0b10100100
+# Sprint Challenge
 
 
 class CPU:
@@ -92,23 +86,39 @@ class CPU:
                 self.ram[address] = int(line, 2)
                 address += 1
 
-    def alu(self, op, operands):
-        """ALU operations."""
-        # extracts the registers from the operands
-        reg_a, reg_b = operands
-        # TODO: get this look-up to run at O(1)
-        # adding it to the branch table won't help (i think)
-        if op is ADD:
-            self.reg[reg_a] += self.reg[reg_b]
-        elif op is MUL:
-            self.reg[reg_a] *= self.reg[reg_b]
-        elif op is CMP:
+    def alu(self, op, operand_a, operand_b=None):
+        reg_a = operand_a
+        reg_b = operand_b
+
+        def _CMP():
             if self.reg[reg_a] < self.reg[reg_b]:
-                self.fl = 0b00000100
+                return 0b00000100
             elif self.reg[reg_a] > self.reg[reg_b]:
-                self.fl = 0b00000010
+                return 0b00000010
             elif self.reg[reg_a] == self.reg[reg_b]:
-                self.fl = 0b00000001
+                return 0b00000001
+
+        # branchtable for ALU operations
+        alu_operations = {
+            ADD: self.reg[reg_a] + self.reg[reg_b],
+            MUL: self.reg[reg_a] * self.reg[reg_b],
+            CMP: _CMP,
+            AND: self.reg[reg_a] & self.reg[reg_b],
+            OR: self.reg[reg_a] | self.reg[reg_b],
+            XOR: self.reg[reg_a] ^ self.reg[reg_b],
+            NOT: ~(self.reg[reg_a]),
+            #    bit-wise shifts left, and fills the low bits with 0
+            SHL: (self.reg[reg_a] << self.reg[reg_b]) & 0b11111111,
+            #    bit-wise shifts right, high bits are implicitly filled with 0's
+            SHR: (self.reg[reg_a] >> self.reg[reg_b]),
+            MOD: self.reg[reg_a] % self.reg[reg_b]
+        }
+
+        if op is CMP:
+            self.fl = _CMP()
+        elif op in alu_operations:
+            self.reg[reg_a] = alu_operations[op]
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -151,21 +161,17 @@ class CPU:
 
         # destructures parsed 'inst' dict
         num_ops, is_alu, sets_pc, inst_id = inst.values()
-        # initializes operand list of length 'num_ops'
-        operands = [None] * num_ops
 
-        # reads operands from memory and stores in 'operands' list
-        for i in range(len(operands)):
-            operand = self.ram_read(self.reg[PC] + i + 1)
-            operands[i] = operand
-
+        # reads the operands from memory and stores it in each operand
+        operand_a = self.ram_read(self.reg[PC] + 1)
+        operand_b = self.ram_read(self.reg[PC] + 2)
         # redirects to ALU if instruction is an ALU instruction
         if is_alu:
-            self.alu(instruction, operands)
+            self.alu(instruction, operand_a, operand_b)
 
         # otherwise executes directly from the `operations` branch-table
         else:
-            self.operations[instruction](operands)
+            self.operations[instruction](operand_a, operand_b)
 
         if not sets_pc:
             self.reg[PC] += num_ops + 1
@@ -192,51 +198,56 @@ class CPU:
             "num_ops": num_ops,
             "is_alu": is_alu,
             "sets_pc": sets_pc,
-            "inst_id": inst_id,
+            "inst_id": inst_id
         }
 
-    def JMP(self, operand):
-        target_reg = operand[0]
+    def JMP(self, operand_a, operand_b=None):
+        target_reg = operand_a
 
-        self.CALL([target_reg])
+        self.CALL(target_reg, None)
 
         inst_address = self.reg[target_reg]
         self.reg[PC] = inst_address
 
-    def JEQ(self, operand):
-        target_reg = operand[0]
+    def JEQ(self, operand_a, operand_b):
+        target_reg = operand_a
 
+        # masks all but the equal bit and castes to bool
         is_equal = bool((0b00000001) & self.fl)
+
         if is_equal:
-            self.JMP([target_reg])
+            self.JMP(target_reg)
         else:
             self.reg[PC] += 2
 
-    def JNE(self, operand):
-        target_reg = operand[0]
+    def JNE(self, operand_a, operand_b=None):
+        target_reg = operand_a
 
+        # masks all but the equal bit and castes to bool
         is_equal = bool((0b00000001) & self.fl)
+
         if not is_equal:
-            self.JMP([target_reg])
+            self.JMP(target_reg)
         else:
             self.reg[PC] += 2
 
-    def PRN(self, operand):
+    def PRN(self, operand_a, operand_b=None):
         # extracts the target register from the operand
-        target_reg = operand[0]
+        target_reg = operand_a
         # extracts the value stored in the target register
         value = self.reg[target_reg]
         print(value)
 
-    def LDI(self, operands):
+    def LDI(self, operand_a, operand_b):
         # extracts the target register and value from the operands
-        target_reg, value = operands
+        target_reg = operand_a
+        value = operand_b
         # set the value to the target register
         self.reg[target_reg] = value
 
-    def PUSH(self, operand):
+    def PUSH(self, operand_a, operand_b=None):
         # extract the target register from the operand
-        target_reg = operand[0]
+        target_reg = operand_a
         # decrements the SP
         self.reg[SP] -= 1
         # extracts the value stored in the target register
@@ -246,9 +257,9 @@ class CPU:
         # writes the value to the stack address in RAM
         self.ram_write(stack_address, value)
 
-    def POP(self, operand):
+    def POP(self, operand_a, operand_b=None):
         # extracts the target register from the operand
-        target_reg = operand[0]
+        target_reg = operand_a
         # extracts the stack address stored in the SP register
         stack_address = self.reg[SP]
         # extracts the value read from RAM at the stack address
@@ -258,19 +269,19 @@ class CPU:
         # increments the SP
         self.reg[SP] += 1
 
-    def CALL(self, operand):
+    def CALL(self, operand_a, operand_b=None):
         # extract the target register from the operand
-        target_reg = operand[0]
+        target_reg = operand_a
         # increments the PC to the next instruction
         self.reg[PC] += 2
         # pushes the next instruction at the PC onto the stack
-        self.PUSH([PC])
+        self.PUSH(PC)
         # extracts the address of the sub routine from the target register
         sub_routine_address = self.reg[target_reg]
         # sets the PC to the sub routine address
         self.reg[PC] = sub_routine_address
 
-    def RET(self, operand):
+    def RET(self, operand_a, operand_b=None):
         # pops the return address from the stack
         # and stores it in the PC
-        self.POP([PC])
+        self.POP(PC)
