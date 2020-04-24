@@ -192,6 +192,13 @@ class CPU:
             "inst_id": inst_id,
         }
 
+    def JMP(self, operand):
+        target_reg = operand[0]
+
+        inst_address = self.reg[target_reg]
+
+        self.reg[PC] = inst_address
+
     def PRN(self, operand):
         # extracts the target register from the operand
         target_reg = operand[0]
