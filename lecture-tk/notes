@@ -1,0 +1,72 @@
+*************************************************************
+CPU & Components - Central Processing Unit
+*************************************************************
+  Transistors - most basic
+  Logic Gates - made up of TransistorsDigital Logic common operations are performed by Gates
+    ex. AND OR, NOT
+    ex. XOR, NOR, NAND
+  Logic Gates can be put together into far more complex structures:
+    ex. ALU - Arithmetic Logic Unit
+    ex. CPUs
+
+*************************************************************
+RAM - Random Access memory
+*************************************************************
+  Fast compared to hard-drives, even SSDs
+  Like a big array of bytes that you can access by index (or address)
+  Each element in Ram can store oen byte, an 8-bit number
+  Larger, multi-byte values are stored in sequential addresses in RAM
+  CPU communicates with RAM via the memory bus
+
+  RAM stores 1 byte value
+
+  While RAM stores values in bytes CPUs operate on words
+    Bytes of data are stored in RAM (memory)
+    Larger 64-bit (8-byte) numbers, stored sequentially in RAM, thatthe CPU can operate on at once.
+      ^^^^^^^^^ These are calls WORDS ^^^^^^
+    Words - Larger 64-bit (8-byte) numbers, stored sequentially in RAM that the CPU can operate on at once
+
+  Exact number of bytes per word depends on the architecture:
+    8 bytes per word for a 64-bit CPU
+    4 bytes per word for a 32-bit CPU
+    1 byte  per word for a 8-bit  CPU
+
+*************************************************************
+CPU Registers
+*************************************************************
+  Registers store words that can be accessed at ulta-high-speed
+    Size of register is the size of the CPU word
+    Can be thought of as variables that the CPU has at its disposal
+    Simlar to RAM, except stored directly on the CPU so they are much faster
+    There are a limited number of them at your disposal
+      usually 8, 16, or 32, depending on the CPU
+    They have fixed names, e.g. R0, R1, or EAX, EBX etc. depending on the CPU manufacturer
+    Many SPUs can only perform math operations on registers which must be loaded from RAM first.
+      The x86 family can often perform math on registers quickly, or RAM slowly.)
+
+*************************************************************
+CPU Instructions
+*************************************************************
+  Are also stored in RAM with other data
+  Are actually just numbers
+  Humans often use mnemonics to refer to the instruction in a human-readable way
+  CPU keeps track of the address of the currently-executing instruction in RAM AND
+    performs different actions based on the instruction found There
+  The address of the currently-executing instruction is held in a special register called
+    the program counter (PC)
+  CPUs usually have a significant number of (it's own?) instructions, around 50-200
+
+*************************************************************
+CPU Clock
+*************************************************************
+  The clock in a modern CPU triggers a few billion times per second
+  Clock cyle rate is measured in Hz, KHz, MHz, or GHz (billions of cycles per second)
+  Each instruction takes one or more clock cycles to execute
+  The faster the clock, the more instructions can execute per second
+
+
+  Two years to double - Moores Law
+  Speed, RAM is far away, therefore slower
+  Speed as well, cache makes data-lookups faster
+  CPU word is number of bits processed by a computer's CPU in one go
+  Bus carries information

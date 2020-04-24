@@ -1,0 +1,6 @@
+1101
+0b1101
+0xFF
+
+store numbers in binary or hex? store it pure numeric, only when you print it out do you need to specify the base
+
